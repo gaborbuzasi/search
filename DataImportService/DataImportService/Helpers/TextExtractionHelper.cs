@@ -1,0 +1,72 @@
+﻿using System;
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Microsoft.Rest;
+using Microsoft.Azure.CognitiveServices.Language.TextAnalytics;
+using Microsoft.Azure.CognitiveServices.Language.TextAnalytics.Models;
+using Google.Cloud.Vision.V1;
+
+namespace DataImportService.Helpers
+{
+    class ApiKeyServiceClientCredentials : ServiceClientCredentials
+    {
+        private const string SubscriptionKey = "672719d149fd4a52a5d4304379cfa326";
+        public override Task ProcessHttpRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            request.Headers.Add("Ocp-Apim-Subscription-Key", SubscriptionKey);
+            return base.ProcessHttpRequestAsync(request, cancellationToken);
+        }
+    }
+
+    public class TextExtraction
+    {
+        public static KeyPhraseBatchResult ProcessText(AnnotateFileResponse response)
+        {
+            ITextAnalyticsClient client = new TextAnalyticsClient(new ApiKeyServiceClientCredentials())
+            {
+                Endpoint = "https://westeurope.api.cognitive.microsoft.com",
+            };
+
+            // Getting key-phrases
+            Console.WriteLine("\n\n===== KEY-PHRASE EXTRACTION ======");
+
+            var multiInputDocs = response.Responses.Select((resp, x) =>
+            {
+                var maxConfidenceLang = resp.FullTextAnnotation.Pages.First().Property.DetectedLanguages.Max(lang => lang.Confidence);
+
+                var input = new MultiLanguageInput(resp.FullTextAnnotation.Pages.First()
+                                                                    .Property.DetectedLanguages
+                                                                    .First(lang => lang.Confidence == maxConfidenceLang)
+                                                                    .LanguageCode,
+                                                                    x.ToString(),
+                                                                    resp.FullTextAnnotation.Text);
+
+                return input;
+            }).ToList();
+
+
+            var multiInput = new MultiLanguageBatchInput(multiInputDocs);
+
+            KeyPhraseBatchResult result = client.KeyPhrasesAsync(multiInput).Result;
+
+            // Printing keyphrases
+            foreach (var document in result.Documents)
+            {
+                Console.WriteLine($"Document ID: {document.Id} ");
+
+                Console.WriteLine("\t Key phrases:");
+
+                foreach (string keyphrase in document.KeyPhrases)
+                {
+                    Console.WriteLine($"\t\t{keyphrase}");
+                }
+            }
+
+            return result;
+        }
+    }   
+}
+    
