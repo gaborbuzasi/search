@@ -3,7 +3,7 @@
 to deploy the docker cluster:
 
 ```
-$ ELK_VERSION=6.6.0 docker-compose up -d
+$ mkdir -p /mnt/data && ELK_VERSION=6.6.0 docker-compose up -d
 ```
 
 to test ingestion by logstash:
