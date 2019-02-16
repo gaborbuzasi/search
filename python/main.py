@@ -15,8 +15,8 @@ with open("../textdata/exzertifikat.json", 'r') as fjson:
 es.store_record(index_name="bilfingersearch", doc_type="_doc",  record=jsonInput)
 
 # test query
-query_word = 'annex'
-query = {'query': {'match': {'text': query_word }}}
+query_phrase = 'Scelta i una'
+
 # mlt_query = {
 #                 'query': {
 #                     'more_like_this': {
@@ -25,7 +25,7 @@ query = {'query': {'match': {'text': query_word }}}
 #                     }
 #                 }
 #             }
-response = es.search(index_name="bilfingersearch", search=query)
+response = es.search(index_name="bilfingersearch",  query_phrase=query_phrase)
 
 best_result = es.get_best_result(response)
 

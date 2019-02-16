@@ -67,8 +67,9 @@ class elastic(object):
         finally:
             return is_stored
     
-    def search(self, index_name, search):
-        response = self._es.search(index=index_name, body=search)
+    def search(self, index_name, query_phrase):
+        query_object = {'query': {'match_phrase': {'text': query_phrase }}}
+        response = self._es.search(index=index_name, body=query_object)
         return response
     
     def get_best_result(self, response):
