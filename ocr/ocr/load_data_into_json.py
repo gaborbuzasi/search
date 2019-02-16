@@ -121,9 +121,8 @@ def csv_to_txt(input_csv):
 def find_files(root):
     for root, dirs, files in os.walk(root):
         for f in files:
-            if f.lower().endswith(ext):
-                f = os.path.join(root, f)
-                yield f
+            f = os.path.join(root, f)
+            yield f
 
         for d in dirs:
             d = os.path.join(root, d)
