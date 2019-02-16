@@ -130,7 +130,7 @@ def find_files(root):
 
 
 def start_the_data_input_process(fp):
-    location = os.path.dirname(fp)
+    location = os.path.dirname(fp).split('/mnt/data/classified_documents/')[1]
     filename = os.path.basename(fp)
     ext = os.path.splitext(fp)[-1].lower()
 
