@@ -6,6 +6,7 @@ import csv
 import os
 import json
 import re
+from traceback import format_exc
 
 #def load_stop_words():
 #   stop_files = [
@@ -134,21 +135,26 @@ def start_the_data_input_process(fp):
     filename = os.path.basename(fp)
     ext = os.path.splitext(fp)[-1].lower()
 
-    if ext == '.pdf':
-        output = pdf_to_txt(fp)
-    elif ext == '.docx':
-        output = docx_to_text(fp)
-    elif ext == '.csv':
-        output = csv_to_txt(fp)
-    elif ext == '.png' or ext == '.jpg' or ext == '.jpeg' or ext == '.tif':
-        output = image_to_txt(fp)
-    elif ext == '.xls' or ext == '.xlsx':
-        output = xls_to_txt(fp)
-    elif ext == '.db':
-        print("Db Files as Thumpnails not working!")
-        return None
-    else:
-        print("This extension not working!")
-        return None
+    try:
+        if ext == '.pdf':
+            output = pdf_to_txt(fp)
+        elif ext == '.docx':
+            output = docx_to_text(fp)
+        elif ext == '.csv':
+            output = csv_to_txt(fp)
+        elif ext == '.png' or ext == '.jpg' or ext == '.jpeg' or ext == '.tif':
+            output = image_to_txt(fp)
+        elif ext == '.xls' or ext == '.xlsx':
+            output = xls_to_txt(fp)
+        elif ext == '.db':
+            print("Db Files as Thumpnails not working!")
+            return None
+        else:
+            print("This extension not working!")
+            return None
+    except Exception:
+        with open("/var/log/ocr_failed.log", "w") as logging:
+            logging.write(
+                "%s: %s\n\n\n" % (fp, format_exc()))
 
     return get_json_output(location, filename, output)
