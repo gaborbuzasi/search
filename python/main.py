@@ -16,7 +16,17 @@ es.store_record(index_name="bilfingersearch", doc_type="_doc",  record=jsonInput
 
 # test query
 query_word = 'annex'
-search_object = {'query': {'match': {'text': query_word }}}
-search_result=es.search(index_name="bilfingersearch", search=search_object)
+query = {'query': {'match': {'text': query_word }}}
+# mlt_query = {
+#                 'query': {
+#                     'more_like_this': {
+#                         'fields': ['folder', 'filename', 'text'],
+#                         'like': query_word
+#                     }
+#                 }
+#             }
+response = es.search(index_name="bilfingersearch", search=query)
 
-print("You most likely are interested in: %s%s" % (search_result['hits']['hits'][0]['_source']['folder'], search_result['hits']['hits'][0]['_source']['filename']))
+best_result = es.get_best_result(response)
+
+print("You most likely are interested in: %s" % (best_result))

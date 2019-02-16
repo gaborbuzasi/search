@@ -1,4 +1,5 @@
 from elasticsearch import Elasticsearch
+from operator import itemgetter
 
 class elastic(object):
 
@@ -24,7 +25,13 @@ class elastic(object):
                             "type": "text"
                         },
                         "text": {
-                            "type": "text"
+                            "type": "text",
+                            "analyzer": "german",
+                            "fields": {
+                                "raw": {
+                                    "type":"keyword"
+                                }
+                            }
                         },
                     }
                 }
@@ -40,11 +47,18 @@ class elastic(object):
             print(str(ex))
         finally:
             return created
+
+    def delete_index(self, index_name):
+        self._es.indices.delete(index=index_name, ignore=[400, 404])
     
     def store_record(self, index_name, doc_type, record):
         is_stored = True
         try:
-            outcome = self._es.index(index=index_name, doc_type=doc_type, body=record)
+            item = self._es.get(index=index_name, doc_type='_doc', id=record['filename'], ignore=[404])
+            if item['found'] == True:
+                print('Item with id %s already stored' % (record['filename']))
+                return True
+            outcome = self._es.index(index=index_name, doc_type=doc_type, body=record, id=record['filename'])
             # print(outcome)
         except Exception as ex:
             print('Error in indexing data')
@@ -54,6 +68,20 @@ class elastic(object):
             return is_stored
     
     def search(self, index_name, search):
-        res = self._es.search(index=index_name, body=search)
-        # print(res)
-        return res
+        response = self._es.search(index=index_name, body=search)
+        return response
+    
+    def get_best_result(self, response):
+        filenames = {}
+        for hit in response['hits']['hits']:
+            score = hit['_score']
+            filename = hit['_source']['filename']
+            if filename not in filenames:
+                filenames[filename] = score
+            else:
+                filenames[filename] += score
+        if len(filenames) > 0:
+            filenames_sorted_by_score = sorted(filenames.items(),key=itemgetter(1), reverse=True)
+            filename = filenames_sorted_by_score[0][0]
+            return filename
+
