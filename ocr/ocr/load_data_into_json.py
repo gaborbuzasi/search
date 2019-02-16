@@ -44,7 +44,7 @@ def get_json_output(location, filename, txt_content):
    #content['text'] = reduce_file(txt_content)
    content['text'] = txt_content
 
-   json.dump(content, outfile)
+   return content
 
 
 def pdf_to_txt(input_pdf):
