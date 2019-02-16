@@ -45,7 +45,7 @@ services:
     command: tail -F anything
     volumes:
       - ${DATA_SOURCE}:/mnt/data/classified_documents:ro
-      - /var/log/ocr_failed.log:/var/log/ocr_failed.log
+      - /var/log/ocr/ocr_failed.log:/var/log/ocr_failed.log
     networks:
       - elk
     depends_on:
