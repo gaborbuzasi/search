@@ -7,41 +7,42 @@ import os
 import json
 import re
 
-def load_stop_words():
-   stop_files = [
-       '/var/lib/ocr/stopwords-de.txt',
-       '/var/lib/ocr/stopwords-en.txt',
-       '/var/lib/ocr/stopwords-it.txt']
+#def load_stop_words():
+#   stop_files = [
+#       '/var/lib/ocr/stopwords-de.txt',
+#       '/var/lib/ocr/stopwords-en.txt',
+#       '/var/lib/ocr/stopwords-it.txt']
+#
+#   stop_words = []
+#
+#   for stopf in stop_files:
+#       fh = open(stopf, "r")
+#       stop_content = fh.read()
+#       fh.close()
+#       stop_words += re.split(r"/|\n| |:", stop_content)
+#
+#
+#def reduce_file(input_text):
+#   load_stop_words()
+#
+#   input_text = input_text.lower()
+#   input_text = re.sub('\n', ' ', input_text)
+#   all_words = re.split(
+#       r"/|\?|#|=|&|\. |\.\n,|\||!| |:|, | ,|\)|\(|- -|- | -|;", input_text)
+#
+#   return ' '.join(
+#           list(set(
+#               [w for w in all_words
+#                if w not in ['','-','--','>','+','*']
+#                and w not in stop_words])))
 
-   stop_words = []
 
-   for stopf in stop_files:
-       fh = open(stopf, "r")
-       stop_content = fh.read()
-       fh.close()
-       stop_words += re.split(r"/|\n| |:", stop_content)
-
-
-def reduce_file(input_text):
-   load_stop_words()
-
-   input_text = input_text.lower()
-   input_text = re.sub('\n', ' ', input_text)
-   all_words = re.split(
-       r"/|\?|#|=|&|\. |\.\n,|\||!| |:|, | ,|\)|\(|- -|- | -|;", input_text)
-
-   return ' '.join(
-           list(set(
-               [w for w in all_words
-                if w not in ['','-','--','>','+','*']
-                and w not in stop_words])))
-
-
-def clean(location, filename, txt_content):
+def get_json_output(location, filename, txt_content):
    content = {}
    content['folder'] = location
    content['filename'] = filename
-   content['text'] = reduce_file(txt_content)
+   #content['text'] = reduce_file(txt_content)
+   content['text'] = txt_content
 
    json.dump(content, outfile)
 
@@ -117,7 +118,7 @@ def csv_to_txt(input_csv):
     return txt
 
 
-def find_files(root, ext):
+def find_files(root):
     for root, dirs, files in os.walk(root):
         for f in files:
             if f.lower().endswith(ext):
@@ -126,30 +127,29 @@ def find_files(root, ext):
 
         for d in dirs:
             d = os.path.join(root, d)
-            find_files(d, ext)
+            find_files(d)
 
 
 def start_the_data_input_process(fp):
+    location = os.path.dirname(fp)
+    filename = os.path.basename(fp)
     ext = os.path.splitext(fp)[-1].lower()
 
     if ext == '.pdf':
         output = pdf_to_txt(fp)
-        return reduce_file(output)
     elif ext == '.docx':
         output = docx_to_text(fp)
-        return reduce_file(output)
     elif ext == '.csv':
         output = csv_to_txt(fp)
-        return reduce_file(output)
     elif ext == '.png' or ext == '.jpg' or ext == '.jpeg' or ext == '.tif':
         output = image_to_txt(fp)
-        return reduce_file(output)
     elif ext == '.xls' or ext == '.xlsx':
         output = xls_to_txt(fp)
-        return reduce_file(output)
     elif ext == '.db':
         print("Db Files as Thumpnails not working!")
         return None
     else:
         print("This extension not working!")
         return None
+
+    return get_json_output(location, filename, output)

@@ -42,9 +42,9 @@ services:
     build:
       context: ocr/
     container_name: ocr
+    command: tail -F anything
     volumes:
-      - $DATA_SOURCE:/mnt/data/classified_documents:ro
-      - ./ocr/stop_words:/var/lib/ocr:ro
+      - ${DATA_SOURCE}:/mnt/data/classified_documents:ro
     networks:
       - elk
     depends_on:
