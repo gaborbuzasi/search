@@ -74,20 +74,22 @@ namespace DataImportService.Helpers
             }
 
             var response = JsonParser.Default.Parse<AnnotateFileResponse>(jsonString);
-            var recognisedText = string.Join("\n", response.Responses.Select(resp => resp.FullTextAnnotation.Text));
+            var recognisedText = string.Join("\n", response.Responses.Select(resp => resp.FullTextAnnotation?.Text ?? string.Empty));
 
-            var keyPhraseResult = TextExtraction.ProcessText(response);
-
-
-            if (response.Responses.Any())
+            if (!string.IsNullOrEmpty(recognisedText))
             {
-                Console.WriteLine("Uploading extracted text to Elastic Search...\r\n");
-                string fileNameOnly = System.IO.Path.GetFileName(fileName);
-                string fileId = System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileNameOnly));
-                ElasticHelpers.InsertDocument(recognisedText, fileName, keyPhraseResult.Documents.SelectMany(x => x.KeyPhrases).ToList());
-            }
+                var keyPhraseResult = TextExtraction.ProcessText(response);
 
-            Console.WriteLine($"Finished uploading {fileName}. ");
+                if (keyPhraseResult != null && response.Responses.Any())
+                {
+                    Console.WriteLine("Uploading extracted text to Elastic Search...\r\n");
+                    string fileNameOnly = System.IO.Path.GetFileName(fileName);
+                    string fileId = System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileNameOnly));
+                    ElasticHelpers.InsertDocument(recognisedText, fileName, keyPhraseResult.Documents.SelectMany(x => x.KeyPhrases).ToList());
+                }
+
+                Console.WriteLine($"Finished uploading {fileName}. ");
+            }
         }
 
         public static void DetectImageText(string gcsSourceBucketUri,
@@ -125,19 +127,22 @@ namespace DataImportService.Helpers
             // written to GCS, we can list all the output files.
             var storageClient = StorageClient.Create();
 
-            var recognisedText = string.Join("\n", response.Responses.Select(resp => resp.FullTextAnnotation.Text));
+            var recognisedText = string.Join("\n", response.Responses.Select(resp => resp.FullTextAnnotation?.Text ?? string.Empty));
 
-            var keyPhraseResult = TextExtraction.ProcessText(response);
-
-            if (response.Responses.Any())
+            if (!string.IsNullOrEmpty(recognisedText))
             {
-                Console.WriteLine("Uploading extracted text to Elastic Search...\r\n");
-                string fileNameOnly = System.IO.Path.GetFileName(fileName);
-                string fileId = System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileNameOnly));
-                ElasticHelpers.InsertDocument(recognisedText, fileName, keyPhraseResult.Documents.SelectMany(x => x.KeyPhrases).ToList());
-            }
+                var keyPhraseResult = TextExtraction.ProcessText(response);
 
-            Console.WriteLine($"Finished uploading {fileName}. ");
+                if (response.Responses.Any())
+                {
+                    Console.WriteLine("Uploading extracted text to Elastic Search...\r\n");
+                    string fileNameOnly = System.IO.Path.GetFileName(fileName);
+                    string fileId = System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileNameOnly));
+                    ElasticHelpers.InsertDocument(recognisedText, fileName, keyPhraseResult.Documents.SelectMany(x => x.KeyPhrases).ToList());
+                }
+
+                Console.WriteLine($"Finished uploading {fileName}. ");
+            }
         }
     }
 }

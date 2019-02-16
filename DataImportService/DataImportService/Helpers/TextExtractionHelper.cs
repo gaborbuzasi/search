@@ -33,39 +33,43 @@ namespace DataImportService.Helpers
             // Getting key-phrases
             Console.WriteLine("\n\n===== KEY-PHRASE EXTRACTION ======");
 
-            var multiInputDocs = response.Responses.Select((resp, x) =>
+            if (response.Responses.Any(resp => resp.FullTextAnnotation != null))
             {
-                var maxConfidenceLang = resp.FullTextAnnotation.Pages.First().Property.DetectedLanguages.Max(lang => lang.Confidence);
-
-                var input = new MultiLanguageInput(resp.FullTextAnnotation.Pages.First()
-                                                                    .Property.DetectedLanguages
-                                                                    .First(lang => lang.Confidence == maxConfidenceLang)
-                                                                    .LanguageCode,
-                                                                    x.ToString(),
-                                                                    resp.FullTextAnnotation.Text);
-
-                return input;
-            }).ToList();
-
-
-            var multiInput = new MultiLanguageBatchInput(multiInputDocs);
-
-            KeyPhraseBatchResult result = client.KeyPhrasesAsync(multiInput).Result;
-
-            // Printing keyphrases
-            foreach (var document in result.Documents)
-            {
-                Console.WriteLine($"Document ID: {document.Id} ");
-
-                Console.WriteLine("\t Key phrases:");
-
-                foreach (string keyphrase in document.KeyPhrases)
+                var multiInputDocs = response.Responses.Select((resp, x) =>
                 {
-                    Console.WriteLine($"\t\t{keyphrase}");
+                    var maxConfidenceLang = resp.FullTextAnnotation.Pages.First().Property.DetectedLanguages.Max(lang => lang.Confidence);
+
+                    var input = new MultiLanguageInput(resp.FullTextAnnotation.Pages.First()
+                                                                        .Property.DetectedLanguages
+                                                                        .First(lang => lang.Confidence == maxConfidenceLang)
+                                                                        .LanguageCode,
+                                                                        x.ToString(),
+                                                                        resp.FullTextAnnotation.Text);
+
+                    return input;
+                }).ToList();
+
+                var multiInput = new MultiLanguageBatchInput(multiInputDocs);
+
+                KeyPhraseBatchResult result = client.KeyPhrasesAsync(multiInput).Result;
+
+                // Printing keyphrases
+                foreach (var document in result.Documents)
+                {
+                    Console.WriteLine($"Document ID: {document.Id} ");
+
+                    Console.WriteLine("\t Key phrases:");
+
+                    foreach (string keyphrase in document.KeyPhrases)
+                    {
+                        Console.WriteLine($"\t\t{keyphrase}");
+                    }
                 }
+
+                return result;
             }
 
-            return result;
+            return null;
         }
 
         public static KeyPhraseBatchResult ProcessText(BatchAnnotateImagesResponse response)

@@ -26,7 +26,14 @@ namespace DataImportService.Helpers
                 SourceId = "1"
             };
 
-            client.Index(doc, index => index.Index(string.Join("", title.Select(x => string.IsNullOrWhiteSpace(x.ToString()) ? string.Empty : x.ToString()))));
+            title = title.Replace(",", "").Replace("/", "").Replace("\\", "").Replace(" ", "").ToLower();
+
+            var result = client.Index(doc, index => index.Index(title));
+
+            if (result.Result != Result.Created)
+            {
+                Console.WriteLine($"Error with file - {doc.Title} - {result.OriginalException.Message}");
+            }
         }
     }
 }
