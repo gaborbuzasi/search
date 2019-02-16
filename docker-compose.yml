@@ -38,6 +38,18 @@ services:
     depends_on:
       - elasticsearch
 
+  ocr:
+    build:
+      context: ocr/
+    container_name: ocr
+    volumes:
+      - $DATA_SOURCE:/mnt/data/classified_documents:ro
+      - ./ocr/stop_words:/var/lib/ocr:ro
+    networks:
+      - elk
+    depends_on:
+      - logstash
+
 networks:
 
   elk:
