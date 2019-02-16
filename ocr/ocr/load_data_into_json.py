@@ -156,5 +156,6 @@ def start_the_data_input_process(fp):
         with open("/var/log/ocr_failed.log", "a") as logging:
             logging.write(
                 "%s: %s\n\n\n" % (fp, format_exc()))
+            return None
 
     return get_json_output(location, filename, output)
