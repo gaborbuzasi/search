@@ -38,6 +38,19 @@ services:
     depends_on:
       - elasticsearch
 
+  ocr:
+    build:
+      context: ocr/
+    container_name: ocr
+    command: tail -F anything
+    volumes:
+      - ${DATA_SOURCE}:/mnt/data/classified_documents:ro
+      - /var/log/ocr:/var/log/ocr
+    networks:
+      - elk
+    depends_on:
+      - logstash
+
 networks:
 
   elk:

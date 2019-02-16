@@ -1,4 +1,6 @@
 data/
+textdata/
+__pycache__/
 
 *.swp
 *.*~
