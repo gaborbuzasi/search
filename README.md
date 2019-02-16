@@ -3,7 +3,7 @@
 to deploy the docker cluster:
 
 ```
-$ DATA_SOURCE=/path/to/source/data ELK_VERSION=6.6.0 docker-compose up -d
+$ mkdir -p /var/log/ocr && DATA_SOURCE=/path/to/source/data ELK_VERSION=6.6.0 docker-compose up -d
 ```
 
 to test ingestion by logstash:

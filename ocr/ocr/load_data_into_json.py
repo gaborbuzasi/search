@@ -153,7 +153,7 @@ def start_the_data_input_process(fp):
             print("This extension not working!")
             return None
     except Exception:
-        with open("/var/log/ocr_failed.log", "w") as logging:
+        with open("/var/log/ocr_failed.log", "a") as logging:
             logging.write(
                 "%s: %s\n\n\n" % (fp, format_exc()))
 
