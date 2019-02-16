@@ -54,6 +54,8 @@ namespace DataImportService
                                                 "bilfingerfiles",
                                                 "exp/");
             }
+
+            Console.ReadLine();
         }
     }
 }
