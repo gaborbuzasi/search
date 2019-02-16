@@ -67,6 +67,51 @@ namespace DataImportService.Helpers
 
             return result;
         }
+
+        public static KeyPhraseBatchResult ProcessText(BatchAnnotateImagesResponse response)
+        {
+            ITextAnalyticsClient client = new TextAnalyticsClient(new ApiKeyServiceClientCredentials())
+            {
+                Endpoint = "https://westeurope.api.cognitive.microsoft.com",
+            };
+
+            // Getting key-phrases
+            Console.WriteLine("\n\n===== KEY-PHRASE EXTRACTION ======");
+
+            var multiInputDocs = response.Responses.Select((resp, x) =>
+            {
+                var maxConfidenceLang = resp.FullTextAnnotation.Pages.First().Property.DetectedLanguages.Max(lang => lang.Confidence);
+
+                var input = new MultiLanguageInput(resp.FullTextAnnotation.Pages.First()
+                                                                    .Property.DetectedLanguages
+                                                                    .First(lang => lang.Confidence == maxConfidenceLang)
+                                                                    .LanguageCode,
+                                                                    x.ToString(),
+                                                                    resp.FullTextAnnotation.Text);
+
+                return input;
+            }).ToList();
+
+
+            var multiInput = new MultiLanguageBatchInput(multiInputDocs);
+
+            KeyPhraseBatchResult result = client.KeyPhrasesAsync(multiInput).Result;
+
+            // Printing keyphrases
+            foreach (var document in result.Documents)
+            {
+                Console.WriteLine($"Document ID: {document.Id} ");
+
+                Console.WriteLine("\t Key phrases:");
+
+                foreach (string keyphrase in document.KeyPhrases)
+                {
+                    Console.WriteLine($"\t\t{keyphrase}");
+                }
+            }
+
+            return result;
+        }
     }   
 }
     

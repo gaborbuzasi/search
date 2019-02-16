@@ -12,27 +12,26 @@ namespace DataImportService
     {
         static void Main(string[] args)
         {
-            //var storClient = StorageClient.Create();
-            //
-            //var files = storClient.ListObjects("bilfingerfiles", "sourceFiles/");
-            //foreach (var file in files.Where(file => file.ContentType == "application/pdf"))
-            //{
-            //    Console.WriteLine($"Processing {file.Name}");
-            //    DetectionHelper.DetectDocument(@"gs://bilfingerfiles",
-            //                                   file.Name,
-            //                                   "bilfingerfiles",
-            //                                   "exp/");
-            //}
+            var storClient = StorageClient.Create();
+            
+            var files = storClient.ListObjects("bilfingerfiles", "sourceFiles/");
+            foreach (var file in files.Where(file => file.ContentType == "application/pdf"))
+            {
+                Console.WriteLine($"Processing {file.Name}");
+                DetectionHelper.DetectPdfText(@"gs://bilfingerfiles",
+                                               file.Name,
+                                               "bilfingerfiles",
+                                               "exp/");
+            }
 
-
-            var file = new FileStream(@"C:\Users\Gabor\Downloads\Ex Zertikat_reduced.json", FileMode.Open);
-            var sr = new StreamReader(file);
-
-            var jsonObj = sr.ReadToEnd();
-            var obj = JsonConvert.DeserializeObject<JsonModel>(jsonObj);
-
-            ElasticHelpers.InsertDocument("test", obj.Filename.ToLower(), obj.Text.ToList());
-
+            foreach (var file in files.Where(file => file.Name.EndsWith(".jpg") || file.Name.EndsWith(".png")))
+            {
+                Console.WriteLine($"Processing {file.Name}");
+                DetectionHelper.DetectImageText(@"gs://bilfingerfiles",
+                                                file.Name,
+                                                "bilfingerfiles",
+                                                "exp/");
+            }
         }
     }
 }

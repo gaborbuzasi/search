@@ -11,7 +11,7 @@ namespace DataImportService.Helpers
 {
     class DetectionHelper
     {
-        public static void DetectDocument(string gcsSourceBucketUri,
+        public static void DetectPdfText(string gcsSourceBucketUri,
                                            string fileName,
                                            string gcsDestinationBucketName,
                                            string gcsDestinationPrefixName)
@@ -81,7 +81,57 @@ namespace DataImportService.Helpers
 
             if (response.Responses.Any())
             {
-                Console.WriteLine("Uploading extracted text to Azure Search...\r\n");
+                Console.WriteLine("Uploading extracted text to Elastic Search...\r\n");
+                string fileNameOnly = System.IO.Path.GetFileName(fileName);
+                string fileId = System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileNameOnly));
+                ElasticHelpers.InsertDocument(recognisedText, fileName, keyPhraseResult.Documents.SelectMany(x => x.KeyPhrases).ToList());
+            }
+
+            Console.WriteLine($"Finished uploading {fileName}. ");
+        }
+
+        public static void DetectImageText(string gcsSourceBucketUri,
+                                               string fileName,
+                                               string gcsDestinationBucketName,
+                                               string gcsDestinationPrefixName)
+        {
+            var client = ImageAnnotatorClient.Create();
+
+            var asyncRequest = new AnnotateImageRequest()
+            {
+                 Image = new Image
+                 {
+                     Source = new ImageSource
+                     {
+                         ImageUri = $"gs://{gcsSourceBucketUri}/{fileName}"
+                     }
+                 }
+            };
+
+            asyncRequest.Features.Add(new Feature
+            {
+                Type = Feature.Types.Type.TextDetection
+            });
+
+            List<AnnotateImageRequest> requests =
+                new List<AnnotateImageRequest>();
+            requests.Add(asyncRequest);
+
+            var response = client.BatchAnnotateImagesAsync(requests).Result;
+
+            Console.WriteLine("Waiting for the operation to finish");
+
+            // Once the rquest has completed and the output has been
+            // written to GCS, we can list all the output files.
+            var storageClient = StorageClient.Create();
+
+            var recognisedText = string.Join("\n", response.Responses.Select(resp => resp.FullTextAnnotation.Text));
+
+            var keyPhraseResult = TextExtraction.ProcessText(response);
+
+            if (response.Responses.Any())
+            {
+                Console.WriteLine("Uploading extracted text to Elastic Search...\r\n");
                 string fileNameOnly = System.IO.Path.GetFileName(fileName);
                 string fileId = System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileNameOnly));
                 ElasticHelpers.InsertDocument(recognisedText, fileName, keyPhraseResult.Documents.SelectMany(x => x.KeyPhrases).ToList());
