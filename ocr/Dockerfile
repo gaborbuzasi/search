@@ -10,5 +10,4 @@ COPY ./requirements.txt /var/lib/ocr/requirements.txt
 
 RUN pip install --no-cache-dir -r /var/lib/ocr/requirements.txt
 
-#CMD [ "python", "/var/lib/ocr/main.py" ]
-CMD [ "sleep", "10000" ]
+CMD [ "python", "/var/lib/ocr/main.py" ]
