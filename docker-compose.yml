@@ -1,0 +1,57 @@
+version: '3.5'
+
+services:
+
+  elasticsearch:
+    build:
+      context: elasticsearch/
+      args:
+        ELK_VERSION: ${ELK_VERSION}
+    container_name: elasticsearch
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+      - ./data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+    networks:
+      - elk
+
+  logstash:
+    build:
+      context: logstash/
+      args:
+        ELK_VERSION: ${ELK_VERSION}
+    container_name: logstash
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+    ports:
+      - "5000:5000"
+      - "9600:9600"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+
+  ocr:
+    build:
+      context: ocr/
+    container_name: ocr
+    command: tail -F anything
+    volumes:
+      - ${DATA_SOURCE}:/mnt/data/classified_documents:ro
+      - /var/log/ocr:/var/log/ocr
+    networks:
+      - elk
+    depends_on:
+      - logstash
+
+networks:
+
+  elk:
+    driver: bridge
