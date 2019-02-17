@@ -14,7 +14,7 @@ namespace DataImportService.Helpers
 {
     class ApiKeyServiceClientCredentials : ServiceClientCredentials
     {
-        private const string SubscriptionKey = "672719d149fd4a52a5d4304379cfa326";
+        private const string SubscriptionKey = "<InsertApiKeyHere>";
         public override Task ProcessHttpRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             request.Headers.Add("Ocp-Apim-Subscription-Key", SubscriptionKey);
