@@ -32,7 +32,7 @@ namespace DataImportService.Helpers
                 OutputConfig = new OutputConfig
                 {
                     // How many pages should be grouped into each json output file.
-                    BatchSize = 10,
+                    BatchSize = 100,
                     GcsDestination = new GcsDestination()
                     {
                         Uri = $"gs://{gcsDestinationBucketName}/{fileName}.json"
@@ -112,7 +112,7 @@ namespace DataImportService.Helpers
 
             asyncRequest.Features.Add(new Feature
             {
-                Type = Feature.Types.Type.TextDetection
+                Type = Feature.Types.Type.DocumentTextDetection
             });
 
             List<AnnotateImageRequest> requests =

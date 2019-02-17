@@ -15,7 +15,7 @@ namespace DataImportService
         {
             var storClient = StorageClient.Create();
             
-            var files = storClient.ListObjects("bilfingerfiles", "newSourceFiles/");
+            var files = storClient.ListObjects("bilfingerfiles", "demo/");
             foreach (var file in files.Where(file => file.ContentType == "application/pdf"))
             {
                 Console.WriteLine($"Processing {file.Name}");

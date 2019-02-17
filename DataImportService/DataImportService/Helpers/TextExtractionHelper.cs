@@ -55,20 +55,24 @@ namespace DataImportService.Helpers
 
                 var multiInput = new MultiLanguageBatchInput(multiInputDocs.Where(doc => doc != null).ToList());
 
-                KeyPhraseBatchResult result = client.KeyPhrasesAsync(multiInput).Result;
+                KeyPhraseBatchResult result = client.KeyPhrasesAsync(multiInput)?.Result ?? null;
 
-                // Printing keyphrases
-                foreach (var document in result.Documents)
+                if (result!= null)
                 {
-                    Console.WriteLine($"Document ID: {document.Id} ");
-
-                    Console.WriteLine("\t Key phrases:");
-
-                    foreach (string keyphrase in document.KeyPhrases)
+                    foreach (var document in result.Documents)
                     {
-                        Console.WriteLine($"\t\t{keyphrase}");
+                        Console.WriteLine($"Document ID: {document.Id} ");
+
+                        Console.WriteLine("\t Key phrases:");
+
+                        foreach (string keyphrase in document.KeyPhrases)
+                        {
+                            Console.WriteLine($"\t\t{keyphrase}");
+                        }
                     }
                 }
+                // Printing keyphrases
+                
 
                 return result;
             }
