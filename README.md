@@ -23,3 +23,11 @@ to recrate the environment from scratch:
 ```
 $ docker rm -f ocr logstash elasticsearch && docker rmi -f search_ocr && rm -rf data/
 ```
+
+## WARNING!
+
+OCR processing is automatically launched during containers creation and takes several time!
+
+Consider to:
+ * Scale the OCR contanier (use more than one)
+ * Allocate as more resources as possible to the containers

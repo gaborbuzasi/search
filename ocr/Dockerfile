@@ -10,4 +10,12 @@ COPY ./requirements.txt /var/lib/ocr/requirements.txt
 
 RUN pip install --no-cache-dir -r /var/lib/ocr/requirements.txt
 
+# automatize the data extraction and push the ingestion to ES
+# at the moment the container is created
+#
+# WARNING! OCR processing takes several time!
+# Consider to:
+#      - Scale the OCR contanier (use more than one)
+#      - Allocate as more resources as possible to the containers
+#
 CMD [ "python", "/var/lib/ocr/main.py" ]
